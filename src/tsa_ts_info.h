@@ -8,6 +8,9 @@
 #define TSA_TS_INFO_HEADER
 
 #include "tsa_tsmonitor.h"
+#include <map>
+
+using std::map;
 
 struct packet_stats
 {
@@ -15,6 +18,7 @@ struct packet_stats
 	int pmt_count{ 0 };
 	int video_count{ 0 };
 	int total_count{ 0 };
+	map<uint32_t, int> pids;
 };
 
 /**

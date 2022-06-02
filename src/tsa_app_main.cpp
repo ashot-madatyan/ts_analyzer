@@ -40,13 +40,21 @@ void process(const char* pfname)
 
 	ts_info* ptsinfo = dynamic_cast<ts_info*>(pmon);
 	
-	printf("====================================\n");
-	printf("STREAM STATISTICS\n====================================\n");
+	printf("============================\n");
+	printf("STREAM STATISTICS\n----------------------------\n");
 	printf("TOTAL PACKETS: %d\n", ptsinfo->stats().total_count);
 	printf("PAT   PACKETS: %d\n", ptsinfo->stats().pat_count);
 	printf("PMT   PACKETS: %d\n", ptsinfo->stats().pmt_count);
 	printf("VIDEO PACKETS: %d\n", ptsinfo->stats().video_count);
-	printf("====================================\n");
+	
+	printf("\nPIDs in the TS\n----------------------------\n");
+	// Print the PIDs stats
+	for (auto k : ptsinfo->stats().pids)
+	{
+		printf("PID: %-5d %d\n", k, k.second);
+	}
+		
+	printf("============================\n");
 
 	delete ptsinfo;
 }
