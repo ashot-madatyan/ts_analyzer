@@ -10,6 +10,25 @@
 #include "tsa_common.h"
 #include "tsa_ts_info.h"
 
+void report(ts_info* ptsinfo)
+{
+	printf("============================\n");
+	printf("STREAM STATISTICS\n----------------------------\n");
+	printf("TOTAL PACKETS: %d\n", ptsinfo->stats().total_count);
+	printf("PAT   PACKETS: %d\n", ptsinfo->stats().pat_count);
+	printf("PMT   PACKETS: %d\n", ptsinfo->stats().pmt_count);
+	printf("VIDEO PACKETS: %d\n", ptsinfo->stats().video_count);
+
+	printf("\nPIDs in the TS\n----------------------------\n");
+	// Print the PIDs stats
+	for (auto k : ptsinfo->stats().pids)
+	{
+		printf("PID: %-5d %d\n", k, k.second);
+	}
+
+	printf("============================\n");
+}
+
 void process(const char* pfname)
 {
 	FILE* pf = fopen(pfname, "rb");
@@ -39,31 +58,24 @@ void process(const char* pfname)
 	}
 
 	ts_info* ptsinfo = dynamic_cast<ts_info*>(pmon);
-	
-	printf("============================\n");
-	printf("STREAM STATISTICS\n----------------------------\n");
-	printf("TOTAL PACKETS: %d\n", ptsinfo->stats().total_count);
-	printf("PAT   PACKETS: %d\n", ptsinfo->stats().pat_count);
-	printf("PMT   PACKETS: %d\n", ptsinfo->stats().pmt_count);
-	printf("VIDEO PACKETS: %d\n", ptsinfo->stats().video_count);
-	
-	printf("\nPIDs in the TS\n----------------------------\n");
-	// Print the PIDs stats
-	for (auto k : ptsinfo->stats().pids)
-	{
-		printf("PID: %-5d %d\n", k, k.second);
-	}
-		
-	printf("============================\n");
-
+	report(ptsinfo);
 	delete ptsinfo;
+}
+
+void usage()
+{
+	printf("Usage:\n");
+	printf("tsanalyzer <input_ts_file>\n");
 }
 
 int main(int argc, const char* argv[])
 {
-	//const char* pfname = "D:/kino/xaa.ts";
-	const char* pfname = "D:/kino/001_2022_06_01_02_45_50.ts";	
-	process(pfname);
-	
+	if (argc < 2)
+	{
+		usage();
+		return -1;
+	}
+
+	process(argv[1]);
 	return 0;
 }
