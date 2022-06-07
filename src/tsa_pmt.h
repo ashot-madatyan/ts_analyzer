@@ -8,11 +8,43 @@
 #define TSA_PMT_HEADER
 
 #include <set>
+#include <map>
+#include <string>
 
 typedef unsigned char u8;
 typedef unsigned short us16;
 
 using std::set;
+using std::map;
+using std::string;
+
+
+enum class pmt_stream_type
+{
+    // Video
+    PMT_MPEG1Video = 0x01, // ISO 11172-2 (aka MPEG-1)
+    PMT_MPEG2Video = 0x02, // ISO 13818-2 & ITU H.262 (aka MPEG-2)
+    PMT_MPEG4Video = 0x10, // ISO 14492-2 (aka MPEG-4)
+    PMT_H264Video = 0x1b, // ISO 14492-10 & ITU H.264 (aka MPEG-4-AVC)
+    PMT_OpenCableVideo = 0x80,
+    PMT_VC1Video = 0xea, // SMPTE 421M video codec (aka VC1) in Blu-Ray
+
+    // Audio
+    PMT_MPEG1Audio = 0x03, // ISO 11172-3
+    PMT_MPEG2Audio = 0x04, // ISO 13818-3
+    PMT_MPEG2AACAudio = 0x0f, // ISO 13818-7 Audio w/ADTS syntax
+    PMT_MPEG2AudioAmd1 = 0x11, // ISO 13818-3/AMD-1 Audio using LATM syntax
+    PMT_AC3Audio = 0x81, // A/53 Part 3:2009 6.7.1
+    PMT_EAC3Audio = 0x87, // A/53 Part 3:2009 6.7.3
+    PMT_DTSAudio = 0x8a
+};
+
+static map<pmt_stream_type, string> pmt_streams = {
+     {pmt_stream_type::PMT_MPEG1Video, "ISO 11172-2 (aka MPEG-1)"}
+    ,{pmt_stream_type::PMT_MPEG2Video, "ISO 13818-2 & ITU H.262 (aka MPEG-2)"}
+};
+
+
 
 struct pmt_stream_descriptor
 {
@@ -202,11 +234,12 @@ protected:
         while(data < data_end)
         {
             program_descriptor* progdesc = (program_descriptor*)data;
+            data += 2;
 
             if (progdesc->tag == 0x09)
             {
                 cat_descriptor cat_desc;
-                data += 2;
+                //data += 2;
                 read_cat_descriptor(data, cat_desc, progdesc);
                 add_cat_pid(cat_desc.ca_pid);
             }

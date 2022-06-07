@@ -9,6 +9,7 @@
 #include "tsa_parser.h"
 #include "tsa_common.h"
 #include "tsa_ts_info.h"
+#include "tsa_null_audio.h"
 
 void report(ts_info* ptsinfo)
 {
@@ -23,7 +24,7 @@ void report(ts_info* ptsinfo)
 	// Print the PIDs stats
 	for (auto k : ptsinfo->stats().pids)
 	{
-		printf("PID: %-5d %d\n", k, k.second);
+		printf("PID: %-5u %d\n", k.first, k.second);
 	}
 
 	printf("============================\n");
@@ -35,11 +36,19 @@ void process(const char* pfname)
 	
 	ts_parser parser;
 	ts_monitor_base* pmon = new ts_info;
+	ts_null_audio* paud = new ts_null_audio;
 	buffer_entry be;
+
+	paud->init("fout1.ts");
+	
+	// Filter out some audio PIDs
+	paud->set_audio_pids({201,203});
 
 	if (pf)
 	{
 		parser.register_monitor(pmon);
+		parser.register_monitor(dynamic_cast<ts_monitor_base*>(paud));
+		
 		int sz = 0;
 
 		while ((sz = fread(be.buffer(), 1, MTU_PKT_SIZE, pf)) > 0)

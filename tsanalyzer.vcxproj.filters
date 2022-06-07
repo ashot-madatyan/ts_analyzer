@@ -42,6 +42,9 @@
     <ClInclude Include="src\tsa_ts_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\tsa_null_audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\tsa_parser.cpp">
@@ -53,5 +56,11 @@
     <ClCompile Include="src\tsa_ts_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\tsa_null_audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
   </ItemGroup>
 </Project>

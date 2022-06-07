@@ -16,7 +16,7 @@ void ts_info::on_pat_packet(ts_packet* ppkt, pat_packet* ppat)
 {
 	uint32_t pid = ppkt->get_packet_pid();
 	stats_.pids[pid]++;
-
+	
 	++stats_.pat_count;
 	++stats_.total_count;
 }

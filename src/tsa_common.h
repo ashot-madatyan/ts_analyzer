@@ -7,6 +7,8 @@
 #ifndef TSA_COMMON_HEADER
 #define TSA_COMMON_HEADER
 
+#include <stdint.h>
+
 static const int32_t        TS_PKT_SIZE                 = 188;
 static const int32_t        TS_PKT_MTU_CNT              = 7;
 static const int32_t        MTU_PKT_SIZE                = TS_PKT_SIZE * TS_PKT_MTU_CNT;
@@ -23,7 +25,7 @@ enum pid_type
     PIDT_PMT        = 1,
     PIDT_AUDIO      = 2,
     PIDT_VIDEO      = 3,
-    PIDT_CAT        = 4
+    PIDT_CAT        = 4,
 };
 
 /** 
@@ -86,17 +88,5 @@ enum StreamID
     AnyVideo = 0xFFFF0001,
     AnyAudio = 0xFFFF0002
 };
-
-/** Returns true iff video is an MPEG1/2/3, H264 or open cable video stream. */
-static bool is_video(unsigned int type)
-{
-    return ((MPEG1Video == type) ||
-            (MPEG2Video == type) ||
-            (MPEG4Video == type) ||
-            (H264Video == type) ||
-            (VC1Video == type) ||
-            (OpenCableVideo == type));
-}
-
 
 #endif // TSA_COMMON_HEADER

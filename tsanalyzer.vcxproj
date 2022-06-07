@@ -22,6 +22,7 @@
     <ClInclude Include="src\tsa_logger.h" />
     <ClInclude Include="src\tsa_common.h" />
     <ClInclude Include="src\tsa_buffer.h" />
+    <ClInclude Include="src\tsa_null_audio.h" />
     <ClInclude Include="src\tsa_parser.h" />
     <ClInclude Include="src\tsa_pat.h" />
     <ClInclude Include="src\tsa_pmt.h" />
@@ -30,9 +31,13 @@
     <ClInclude Include="src\tsa_ts_info.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\tsa_null_audio.cpp" />
     <ClCompile Include="src\tsa_parser.cpp" />
     <ClCompile Include="src\tsa_app_main.cpp" />
     <ClCompile Include="src\tsa_ts_info.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -91,6 +96,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
+      <DisableSpecificWarnings>4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>

@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <cstring>
 #include "tsa_common.h"
 
 

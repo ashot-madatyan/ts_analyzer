@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 #include "tsa_buffer.h"
+#include "tsa_common.h"
 
 using std::set;
 using std::vector;
@@ -38,6 +39,10 @@ protected:
     int     on_video_packet(ts_packet* pkt);
     int     on_allowed_packet(ts_packet* pkt);
     int     on_unindentified_packet(ts_packet* pkt);
+    void    notify_listeners(ts_packet* pkt, void* p, pid_type pt);
+
+    /** Returns true iff video is an MPEG1/2/3, H264 or open cable video stream. */
+    bool    is_video(unsigned int type);
 
 private:
     int                         total_packets_count_;    // Total count of 188-byte packets processed up to now

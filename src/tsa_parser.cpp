@@ -12,13 +12,6 @@
 #include "tsa_logger.h"
 #include "tsa_tsmonitor.h"
 
-enum 
-{
-    TP_IDXR_SUCCESS       = 0,
-    TP_IDXR_FAILURE       = -1,
-    TP_IDXR_SIZE_ERROR    = -2
-};
-
 ts_parser::ts_parser()
     : total_packets_count_(0)
     , current_timestamp_(0)
@@ -36,6 +29,17 @@ ts_parser::~ts_parser()
 void ts_parser::register_monitor(ts_monitor_base* pmon)
 {
     monitors_.push_back(pmon);
+}
+
+/** Returns true iff video is an MPEG1/2/3, H264 or open cable video stream. */
+bool ts_parser::is_video(unsigned int type)
+{
+    return ((MPEG1Video == type) ||
+            (MPEG2Video == type) ||
+            (MPEG4Video == type) ||
+            (H264Video == type) ||
+            (VC1Video == type) ||
+            (OpenCableVideo == type));
 }
 
 void ts_parser::on_buffer(buffer_entry* pbuffer)
@@ -90,6 +94,48 @@ int ts_parser::process_data(buffer_entry* pentry)
     return 0;
 }
 
+void ts_parser::notify_listeners(ts_packet* pkt, void* p, pid_type pt)
+{
+    for (int i = 0; i < (int)monitors_.size(); ++i)
+    {
+        ts_monitor_base* pmon = monitors_[i];
+
+        switch (pt)
+        {
+        case PIDT_PAT:
+        {
+            pat_packet* ppat = static_cast<pat_packet*>(p);
+            pmon->on_pat_packet(pkt, ppat);
+            break;
+        }
+        case PIDT_PMT:
+        {
+            pmt_packet* ppmt = static_cast<pmt_packet*>(p);
+            pmon->on_pmt_packet(pkt, ppmt);
+            break;
+        }
+        case PIDT_VIDEO:
+        {
+            pmon->on_video_packet(pkt);
+            break;
+        }
+        case PIDT_AUDIO:
+        {
+            pmon->on_packet(pkt);
+            break;
+        }
+        case PIDT_UNDEFINED:
+        {
+            pmon->on_packet(pkt);
+            break;
+        }
+
+        default:
+            break;
+        }
+    }
+}
+
 int ts_parser::on_pat_packet(ts_packet* pkt)
 {
     pat_packet pat(0);
@@ -102,13 +148,8 @@ int ts_parser::on_pat_packet(ts_packet* pkt)
     if (false == pat_found_)
         pat_found_ = true;
 
-    for (int i = 0; i < (int)monitors_.size(); ++i)
-    {
-        ts_monitor_base* pmon = monitors_[i];
-        pmon->on_pat_packet(pkt, &pat);
-    }
-
-    return TP_IDXR_SUCCESS;
+    notify_listeners(pkt, &pat, PIDT_PAT);
+    return 0;
 }
 
 int ts_parser::on_pmt_packet(ts_packet* pkt)
@@ -125,7 +166,7 @@ int ts_parser::on_pmt_packet(ts_packet* pkt)
         unsigned int streamtype = desc.sdecs[i].stream_type;
         if (is_video(streamtype))
         {
-            exp_video_pid_ = desc.sdecs[i].el_pid; // we could trigger "found_video_pid" event here
+            exp_video_pid_ = desc.sdecs[i].el_pid;
             break;
         }
     }
@@ -133,13 +174,8 @@ int ts_parser::on_pmt_packet(ts_packet* pkt)
     if (false == pmt_found_)
         pmt_found_ = true;
 
-    for (int i = 0; i < (int)monitors_.size(); ++i)
-    {
-        ts_monitor_base* pmon = monitors_[i];
-        pmon->on_pmt_packet(pkt, &pmt);
-    }
-
-    return TP_IDXR_SUCCESS;
+    notify_listeners(pkt, &pmt, PIDT_PMT);
+    return 0;
 }
 
 int ts_parser::on_video_packet(ts_packet* pkt)
@@ -147,33 +183,25 @@ int ts_parser::on_video_packet(ts_packet* pkt)
     pkt->set_type(PIDT_VIDEO);
     process_video_packet(pkt);
     
-    for (int i = 0; i < (int)monitors_.size(); ++i)
-    {
-        ts_monitor_base* pmon = monitors_[i];
-        pmon->on_video_packet(pkt);
-    }
-    
-    return TP_IDXR_SUCCESS;
+    notify_listeners(pkt, nullptr, PIDT_VIDEO);
+    return 0;
 }
 
 int ts_parser::on_allowed_packet(ts_packet* pkt)
 {
-     return TP_IDXR_SUCCESS;
+    notify_listeners(pkt, nullptr, PIDT_UNDEFINED);
+    return 0;
 }
 
 int ts_parser::on_unindentified_packet(ts_packet* pkt)
 {
-    for (int i = 0; i < (int)monitors_.size(); ++i)
-    {
-        ts_monitor_base* pmon = monitors_[i];
-        pmon->on_packet(pkt);
-    }
-
-    return TP_IDXR_SUCCESS;
+    notify_listeners(pkt, nullptr, PIDT_UNDEFINED);
+    return 0;
 }
 
 void ts_parser::process_video_packet(ts_packet* pkt)
 {
+#if 0   // IFrame start condition (when both PUSI and RAI are set)
     uint64_t pkt_num, pkt_pid;
     bool pusi = false, rai = false;
 
@@ -182,7 +210,6 @@ void ts_parser::process_video_packet(ts_packet* pkt)
     pusi = pkt->pusi();
     rai = pkt->rai();
 
-#if 0   // IFrame start condition (when both PUSI and RAI are set)
     // Test print the starts of the frames
     if (pusi && rai)
         printf("PUSI+RAI: num: %-10lld pcr: %lld\n", pkt->get_packet_number(), pkt->get_pcr());
